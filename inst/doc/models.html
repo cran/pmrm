@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Models</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+
+
+
+<style type="text/css">
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+}
+.hanging div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+}
+</style>
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Models</h1>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#common-elements" id="toc-common-elements"><span class="toc-section-number">1</span> Common elements</a>
+<ul>
+<li><a href="#data" id="toc-data"><span class="toc-section-number">1.1</span> Data</a></li>
+<li><a href="#likelihood" id="toc-likelihood"><span class="toc-section-number">1.2</span> Likelihood</a></li>
+<li><a href="#variance" id="toc-variance"><span class="toc-section-number">1.3</span> Variance</a></li>
+<li><a href="#expected-value-of-the-control-group" id="toc-expected-value-of-the-control-group"><span class="toc-section-number">1.4</span> Expected value of the control
+group</a></li>
+</ul></li>
+<li><a href="#the-decline-models" id="toc-the-decline-models"><span class="toc-section-number">2</span> The decline models</a>
+<ul>
+<li><a href="#the-non-proportional-decline-model" id="toc-the-non-proportional-decline-model"><span class="toc-section-number">2.1</span> The non-proportional decline
+model</a></li>
+<li><a href="#the-proportional-decline-model" id="toc-the-proportional-decline-model"><span class="toc-section-number">2.2</span> The proportional decline
+model</a></li>
+</ul></li>
+<li><a href="#the-slowing-models" id="toc-the-slowing-models"><span class="toc-section-number">3</span> The slowing models</a>
+<ul>
+<li><a href="#the-non-proportional-slowing-model" id="toc-the-non-proportional-slowing-model"><span class="toc-section-number">3.1</span> The non-proportional slowing
+model</a></li>
+<li><a href="#the-proportional-slowing-model" id="toc-the-proportional-slowing-model"><span class="toc-section-number">3.2</span> The proportional slowing
+model</a></li>
+</ul></li>
+<li><a href="#references" id="toc-references">References</a></li>
+</ul>
+</div>
+
+<p>A progression model for repeated measures (PMRM) is a longitudinal
+continuous-time nonlinear model of a progressive disease. The
+<code>pmrm</code> package implements PMRMs from <span class="citation">Raket (2022)</span>. This vignette defines the models
+in the package.</p>
+<div id="common-elements" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> Common elements</h1>
+<p>This section defines the notation and assumptions common to all
+models in the package.</p>
+<div id="data" class="section level2" number="1.1">
+<h2><span class="header-section-number">1.1</span> Data</h2>
+<p>Let the scalar <span class="math inline">\(y_{ij}\)</span> be the
+continuous measure of disease severity of patient <span class="math inline">\(i\)</span> (<span class="math inline">\(i = 1,
+\ldots, I\)</span>) at clinical visit <span class="math inline">\(j\)</span> (<span class="math inline">\(j = 1,
+\ldots, J\)</span>). For a progressive disease, we generally expect
+<span class="math inline">\(y_{ij}\)</span> to worsen from visit to
+visit. The goal of treatment is usually to minimize this worsening over
+time.</p>
+<p>Some <span class="math inline">\(y_{ij}\)</span> values may be
+missing due to dropout or other intercurrent events. We assume these
+outcomes are missing at random (MAR). Except for the outcomes <span class="math inline">\(y_{ij}\)</span>, all values in the data must be
+non-missing.</p>
+<p><span class="math inline">\(t_{ij}\)</span> is continuous time since
+the baseline visit of <span class="math inline">\(j = 1\)</span>. At
+baseline, we assume treatment has not been administered yet, so all
+study arms should have the same expected outcome if randomization is
+conducted properly.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></p>
+<p>The model may include optional covariates such as age and biomarker
+status.</p>
+</div>
+<div id="likelihood" class="section level2" number="1.2">
+<h2><span class="header-section-number">1.2</span> Likelihood</h2>
+<p>Let <span class="math inline">\(y_i = (y_{i1}, \ldots,
+y_{iJ})\)</span> be the vector of outcomes of patient <span class="math inline">\(i\)</span>. For each pair of different patients
+<span class="math inline">\(i\)</span> and <span class="math inline">\(i^*\)</span>, we assume <span class="math inline">\(y_i\)</span> is independent of <span class="math inline">\(y_{i^*}\)</span> and <span class="math inline">\(\text{Var}(y_i) = \text{Var}(y_{i^*})\)</span> .
+For each <span class="math inline">\(i\)</span>, define <span class="math inline">\(\mu_i = E(y_i) = (\mu_{i1}, \ldots,
+\mu_{iJ})\)</span> and <span class="math inline">\(\Sigma =
+\text{Var}(y_i)\)</span>.</p>
+<p>We assign a multivariate normal likelihood to each whole patient:</p>
+<p><span class="math display">\[
+\begin{aligned}
+y_i \sim \text{MVN}(\mu_i, \Sigma)
+\end{aligned}
+\]</span></p>
+<p>To account for intercurrent events such as dropout, we integrate out
+missing outcomes. This gives us marginal likelihoods for patients whose
+outcomes are partially missing. To construct the marginal likelihood for
+patient <span class="math inline">\(i\)</span>, let <span class="math inline">\(Q_i\)</span> be the <span class="math inline">\(q
+\times I\)</span> matrix such that <span class="math inline">\(Q_i
+y_i\)</span> is the chronologically ordered vector of all <span class="math inline">\(q\)</span> non-missing values of <span class="math inline">\(y_i\)</span>. The marginal likelihood of the
+observed values <span class="math inline">\(Q_i y_i\)</span> is just a
+multivariate normal on a subset of <span class="math inline">\(\mu_i\)</span> and <span class="math inline">\(\Sigma\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+Q_i y_i \sim \text{MVN}(Q_i \mu_i, Q_i \Sigma Q_i^T)
+\end{aligned}
+\]</span></p>
+<p>The model is fit by maximizing the product of these independent
+marginal likelihoods over the parameters that define <span class="math inline">\(\mu_i\)</span> (<span class="math inline">\(i = 1,
+\ldots, I\)</span>) and <span class="math inline">\(\Sigma\)</span>.
+These parameters are <span class="math inline">\(\alpha\)</span>, <span class="math inline">\(\theta\)</span>, <span class="math inline">\(\gamma\)</span>, <span class="math inline">\(\phi\)</span>, and <span class="math inline">\(\rho\)</span>, and they are all defined in
+subsequent sections of this vignette.</p>
+</div>
+<div id="variance" class="section level2" number="1.3">
+<h2><span class="header-section-number">1.3</span> Variance</h2>
+<p>Recall that <span class="math inline">\(\Sigma\)</span> is defined as
+<span class="math inline">\(\text{Var}(y_i)\)</span> (<span class="math inline">\(i = 1, \ldots, I\)</span>). We parameterize <span class="math inline">\(\Sigma\)</span> as follows:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\Sigma &amp;= D \Lambda D
+\end{aligned}
+\]</span></p>
+<p><span class="math inline">\(D\)</span> is a <span class="math inline">\(J \times J\)</span> diagonal matrix with diagonal
+<span class="math inline">\(\sigma = (\sigma_1, \ldots,
+\sigma_J)\)</span> (the visit-specific standard deviation parameters).
+To constrain <span class="math inline">\(\sigma_j \ge 0\)</span>, we
+define a latent parameter vector <span class="math inline">\(\phi =
+(\phi_1, \ldots, \phi_J)\)</span> such that <span class="math inline">\(\phi_j = \log(\sigma_j)\)</span> for <span class="math inline">\(j = 1, \ldots, J\)</span>. The model estimates
+<span class="math inline">\(\phi\)</span> with maximum likelihood.</p>
+<p><span class="math inline">\(\Lambda\)</span> is the <span class="math inline">\(J \times J\)</span> correlation matrix among
+visits within a patient. Define:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\Lambda &amp;= L L^T
+\end{aligned}
+\]</span></p>
+<p><span class="math inline">\(L\)</span> is a lower triangular Cholesky
+factor of the correlation matrix <span class="math inline">\(\Lambda\)</span>, and it is expressed in terms of
+a vector <span class="math inline">\(\rho = (\rho_1, \ldots, \rho_{J(J -
+1) / 2})\)</span> of <span class="math inline">\(\frac{J (J -
+1)}{2}\)</span> latent parameters.<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> The model estimates <span class="math inline">\(\rho\)</span> with maximum likelihood.</p>
+</div>
+<div id="expected-value-of-the-control-group" class="section level2" number="1.4">
+<h2><span class="header-section-number">1.4</span> Expected value of the
+control group</h2>
+<p>Recall that <span class="math inline">\(\mu_{ij}\)</span> is the
+expected mean outcome of patient <span class="math inline">\(i\)</span>
+at visit <span class="math inline">\(j\)</span>. If patient <span class="math inline">\(i\)</span> is part of the control group, then we
+define:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mu_{ij} = f(t_{ij} | \xi, \alpha) + W_i \gamma - \langle
+\overline{W}_i, \gamma \rangle
+\end{aligned}
+\]</span></p>
+<p>Each model expresses the expected outcomes differently, but all
+models reduce to the above equation for the control arm.</p>
+<p>Above, <span class="math inline">\(W_i\)</span> is the <span class="math inline">\(J \times V\)</span> sparse model matrix of
+constant non-missing covariates from the data, <span class="math inline">\(\overline{W}_i\)</span> is <span class="math inline">\(V\)</span>-length vector of the column means of
+<span class="math inline">\(W_i\)</span>, and <span class="math inline">\(\langle \overline{W}_i, \gamma \rangle\)</span> is
+the inner product of <span class="math inline">\(\overline{W}_i\)</span>
+with model coefficient parameter vector <span class="math inline">\(\gamma\)</span>.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> The model estimates
+<span class="math inline">\(\gamma\)</span> with maximum likelihood.</p>
+<p>The mean function <span class="math inline">\(f(t_{ij} | \xi,
+\alpha)\)</span> is the expected clinical outcome at time <span class="math inline">\(t_{ij}\)</span> of the control arm prior to
+covariate adjustment. It is a spline with knots <span class="math inline">\(\xi = (\xi_1, \ldots, \xi_S)\)</span> and vertical
+anchor points <span class="math inline">\(\alpha = (\alpha_1, \ldots,
+\alpha_S)\)</span>.<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a> The knots in <span class="math inline">\(\xi\)</span> are fixed and supplied by the user,
+and they are usually the scheduled visit times specified in the study
+protocol.<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a> The model estimates <span class="math inline">\(\alpha\)</span> with maximum likelihood.</p>
+</div>
+</div>
+<div id="the-decline-models" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> The decline models</h1>
+<p>In progressive disease, we usually expect patient health to decline
+after baseline. The models in this section measure how well treatment
+reduces this decline. Therapeutic benefit is expressed as a pointwise
+reduction on the clinical outcome scale.</p>
+<div id="the-non-proportional-decline-model" class="section level2" number="2.1">
+<h2><span class="header-section-number">2.1</span> The non-proportional
+decline model</h2>
+<p>We express the expected value <span class="math inline">\(\mu_{ij}\)</span> as follows:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mu_{ij} &amp;= (1 - \beta_{b(i)j}) \left ( f(t_{ij} | \xi, \alpha) -
+f(0 | \xi, \alpha) \right ) + f(0 | \xi, \alpha) + W_i \gamma - \langle
+\overline{W}_i, \gamma \rangle
+\end{aligned}
+\]</span></p>
+<p>where <span class="math inline">\(b(i)\)</span> is the study arm of
+patient <span class="math inline">\(i\)</span>, and <span class="math inline">\(\beta_{kj}\)</span> is the reduction in decline of
+study arm <span class="math inline">\(k\)</span> (<span class="math inline">\(k = 1, \ldots, K\)</span>) relative to the control
+arm <span class="math inline">\(k = 1\)</span>.</p>
+<p>To appropriately constrain the parameter space, we express the <span class="math inline">\(\beta_{kj}\)</span> parameters in terms of latent
+<span class="math inline">\(\theta_{(k - 1)(j - 1)}\)</span> parameters
+as follows:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\beta_{kj} = \begin{cases}
+0 &amp; k = 1 \text{ or } j = 1 \\
+\theta_{(k-1)(j-1)} &amp; k \in \{2, \ldots, K\} \text{ and } j \in \{2,
+\ldots, J\}
+\end{cases}
+\end{aligned}
+\]</span></p>
+<p>The model estimates the latent parameters <span class="math inline">\(\theta_{11}, \ldots, \theta_{(K - 1)(J -
+1)}\)</span> with maximum likelihood.</p>
+</div>
+<div id="the-proportional-decline-model" class="section level2" number="2.2">
+<h2><span class="header-section-number">2.2</span> The proportional
+decline model</h2>
+<p>The proportional decline model is the same as the non-proportional
+variant except the treatment effects are now <span class="math inline">\(\beta_1, \ldots, \beta_K\)</span>, which no longer
+depend on the visit. In other words, we assume that the reduction in
+decline due to treatment is proportional to time. We express the
+expectation <span class="math inline">\(\mu_{ij}\)</span> as:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mu_{ij} &amp;= (1 - \beta_{b(i)}) \left ( f(t_{ij} | \xi, \alpha) - f(0
+| \xi, \alpha) \right ) + f(0 | \xi, \alpha) + W_i \gamma - \langle
+\overline{W}_i, \gamma \rangle
+\end{aligned}
+\]</span></p>
+<p>To appropriately constrain the parameter space, we introduce latent
+parameters <span class="math inline">\(\theta_1, \ldots, \theta_{k -
+1}\)</span> as follows:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\beta_k = \begin{cases}
+0 &amp; k = 1 \\
+\theta_{k - 1} &amp; k = 2, \ldots, K
+\end{cases}
+\end{aligned}
+\]</span></p>
+<p>The latent parameters <span class="math inline">\(\theta_1, \dots,
+\theta_{K - 1}\)</span> are estimated with maximum likelihood.</p>
+</div>
+</div>
+<div id="the-slowing-models" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> The slowing models</h1>
+<p>In these models, we assume that treatment slows the passage of time
+along the disease progression trajectory. All study arms share a common
+disease trajectory, and treated patients may progress more slowly on
+that same path than control patients. The treatment effect is on the
+time scale, not the clinical outcome scale.</p>
+<div id="the-non-proportional-slowing-model" class="section level2" number="3.1">
+<h2><span class="header-section-number">3.1</span> The non-proportional
+slowing model</h2>
+<p>The expected value is:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mu_{ij} &amp;= f \left ( u_{ij} | \xi, \alpha \right) + W_{i}\gamma -
+\langle \overline{W}_i, \gamma \rangle
+\end{aligned}
+\]</span></p>
+<p>where <span class="math inline">\(u_{ij}\)</span> is shifted time
+along the disease progression trajectory:</p>
+<p><span class="math display">\[
+\begin{aligned}
+u_{ij} = (1 - \beta_{b(i)j}) t_{ij}
+\end{aligned}
+\]</span></p>
+<p>and <span class="math inline">\(\beta_{kj}\)</span> is the relative
+time shift due treatment <span class="math inline">\(k\)</span> at visit
+<span class="math inline">\(j\)</span>.</p>
+<p>To appropriately constrain the parameter space, we express the <span class="math inline">\(\beta_{kj}\)</span> parameters in terms of latent
+<span class="math inline">\(\theta_{(k - 1)(j - 1)}\)</span> parameters
+as follows:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\beta_{kj} = \begin{cases}
+0 &amp; k = 1 \text{ or } j = 1 \\
+\theta_{(k-1)(j-1)} &amp; k \in \{2, \ldots, K\} \text{ and } j \in \{2,
+\ldots, J\}
+\end{cases}
+\end{aligned}
+\]</span></p>
+<p>The model estimates the latent parameters <span class="math inline">\(\theta_{11}, \ldots, \theta_{(K - 1)(J -
+1)}\)</span> with maximum likelihood.</p>
+</div>
+<div id="the-proportional-slowing-model" class="section level2" number="3.2">
+<h2><span class="header-section-number">3.2</span> The proportional
+slowing model</h2>
+<p>The proportional slowing model is the same as the non-proportional
+variant except the time shifts are now <span class="math inline">\(\beta_1, \ldots, \beta_K\)</span>, which no longer
+depend on the visit. In other words, we assume that the slowing of
+disease progression due to to treatment is proportional to time. We
+express the expectation <span class="math inline">\(\mu_{ij}\)</span>
+the same as before:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mu_{ij} &amp;= f \left ( u_{ij} | \xi, \alpha \right) + W_{i}\gamma -
+\langle \overline{W}_i, \gamma \rangle
+\end{aligned}
+\]</span></p>
+<p>but the time shift uses <span class="math inline">\(\beta_{b(i)}\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+u_{ij} = (1 - \beta_{b(i)}) t_{ij}
+\end{aligned}
+\]</span></p>
+<p>To appropriately constrain the parameter space, we introduce latent
+parameters <span class="math inline">\(\theta_1, \ldots, \theta_{k -
+1}\)</span> as follows:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\beta_k = \begin{cases}
+0 &amp; k = 1 \\
+\theta_{k - 1} &amp; k = 2, \ldots, K
+\end{cases}
+\end{aligned}
+\]</span></p>
+<p>The latent parameters <span class="math inline">\(\theta_1, \dots,
+\theta_{K - 1}\)</span> are estimated with maximum likelihood.</p>
+</div>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1 class="unnumbered">References</h1>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-donohue2023" class="csl-entry">
+Donohue, Michael C, Oliver Langford, Philip S. Insel, Christopher H. van
+Dyck, Ronald C Petersen, Suzanne Craft, Gopalan Sethuraman, Rema Raman,
+and Paul S. Aisen. 2023. <span>“<span>N</span>atural Cubic Splines for
+the Analysis of Alzheimer’s Clinical Trials.”</span>
+<em><span>P</span>harmaceutical <span>S</span>tatistics</em> 22 (3):
+508–19. <a href="https://doi.org/10.1002/pst.2285">https://doi.org/10.1002/pst.2285</a>.
+</div>
+<div id="ref-raket2022" class="csl-entry">
+Raket, Lars Lau. 2022. <span>“Progression Models for Repeated Measures:
+Estimating Novel Treatment Effects in Progressive Diseases.”</span>
+<em><span>S</span>tatistics in <span>M</span>edicine</em> 41 (28):
+5537–57. <a href="https://doi.org/10.1002/sim.9581">https://doi.org/10.1002/sim.9581</a>.
+</div>
+<div id="ref-wang2022" class="csl-entry">
+Wang, Guoqiao, Lei Liu, Yan Li, Andrew J Aschenbrenner, Paul Delmer, Lon
+S Schneidder, Richard E Kennedy, Gary R Cutter, and Chengjie Xiong.
+2022. <span>“<span>P</span>roportional Constrained Longitudinal Data
+Analysis Models for Clinical Trials in Sporadic <span>A</span>lzheimer’s
+Disease.”</span> <em><span>A</span>lzheimer’s and
+<span>D</span>ementia</em> 8 (1). <a href="https://doi.org/10.1002/trc2.12286">https://doi.org/10.1002/trc2.12286</a>.
+</div>
+</div>
+</div>
+<div class="footnotes footnotes-end-of-document">
+<hr />
+<ol>
+<li id="fn1"><p>This is constrained longitudinal data analysis (cLDA) as
+explained by <span class="citation">Wang et al. (2022)</span>.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>In R, <code>RTMB::unstructured(J)$corr(rho)</code> maps
+latent parameter vector <span class="math inline">\(\rho\)</span> to the
+<span class="math inline">\(J \times J\)</span> correlation matrix <span class="math inline">\(L L^T\)</span>.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+<li id="fn3"><p>We express the covariate adjustment terms as <span class="math inline">\(W_i \gamma - \langle \overline{W}_i, \gamma
+\rangle\)</span> to improve computational efficiency when dealing with
+sparse matrices.<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
+<li id="fn4"><p>In other words, <span class="math inline">\(f(\xi_s |
+\xi, \alpha) = \alpha_s\)</span> for <span class="math inline">\(s = 1,
+\ldots, S\)</span>.<a href="#fnref4" class="footnote-back">↩︎</a></p></li>
+<li id="fn5"><p>However, both the discrete visit designations in the
+data and the spline knots in the model may need adjustment if many
+visits occurred off-schedule, as was the case for neurodegeneration
+studies during the COVID-19 pandemic. (See <span class="citation">Donohue et al. (2023)</span>).<a href="#fnref5" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

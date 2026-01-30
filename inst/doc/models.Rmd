@@ -1,0 +1,243 @@
+---
+title: "Models"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+bibliography: '`r system.file("bibliography.bib", package = "pmrm")`'
+vignette: >
+  %\VignetteIndexEntry{Models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+A progression model for repeated measures (PMRM) is a longitudinal continuous-time nonlinear model of a progressive disease.
+The `pmrm` package implements PMRMs from @raket2022.
+This vignette defines the models in the package.
+
+# Common elements
+
+This section defines the notation and assumptions common to all models in the package.
+
+## Data
+
+Let the scalar $y_{ij}$ be the continuous measure of disease severity of patient $i$ ($i = 1, \ldots, I$) at clinical visit $j$ ($j = 1, \ldots, J$).
+For a progressive disease, we generally expect $y_{ij}$ to worsen from visit to visit.
+The goal of treatment is usually to minimize this worsening over time.
+
+Some $y_{ij}$ values may be missing due to dropout or other intercurrent events.
+We assume these outcomes are missing at random (MAR).
+Except for the outcomes $y_{ij}$, all values in the data must be non-missing.
+
+$t_{ij}$ is continuous time since the baseline visit of $j = 1$.
+At baseline, we assume treatment has not been administered yet, so all study arms should have the same expected outcome if randomization is conducted properly.^[This is constrained longitudinal data analysis (cLDA) as explained by @wang2022.]
+
+The model may include optional covariates such as age and biomarker status.
+
+## Likelihood
+
+Let $y_i = (y_{i1}, \ldots, y_{iJ})$ be the vector of outcomes of patient $i$.
+For each pair of different patients $i$ and $i^*$, we assume $y_i$ is independent of $y_{i^*}$ and $\text{Var}(y_i) = \text{Var}(y_{i^*})$ .
+For each $i$, define $\mu_i = E(y_i) = (\mu_{i1}, \ldots, \mu_{iJ})$ and $\Sigma = \text{Var}(y_i)$.
+
+We assign a multivariate normal likelihood to each whole patient:
+
+$$
+\begin{aligned}
+y_i \sim \text{MVN}(\mu_i, \Sigma)
+\end{aligned}
+$$
+
+To account for intercurrent events such as dropout, we integrate out missing outcomes.
+This gives us marginal likelihoods for patients whose outcomes are partially missing.
+To construct the marginal likelihood for patient $i$, let $Q_i$ be the $q \times I$ matrix such that $Q_i y_i$ is the chronologically ordered vector of all $q$ non-missing values of $y_i$.
+The marginal likelihood of the observed values $Q_i y_i$ is just a multivariate normal on a subset of $\mu_i$ and $\Sigma$:
+
+$$
+\begin{aligned}
+Q_i y_i \sim \text{MVN}(Q_i \mu_i, Q_i \Sigma Q_i^T)
+\end{aligned}
+$$
+
+The model is fit by maximizing the product of these independent marginal likelihoods over the  parameters that define $\mu_i$ ($i = 1, \ldots, I$) and $\Sigma$.
+These parameters are $\alpha$, $\theta$, $\gamma$, $\phi$, and $\rho$, and they are all defined in subsequent sections of this vignette.
+
+## Variance
+
+Recall that $\Sigma$ is defined as $\text{Var}(y_i)$ ($i = 1, \ldots, I$). 
+We parameterize $\Sigma$ as follows:
+
+$$
+\begin{aligned}
+\Sigma &= D \Lambda D
+\end{aligned}
+$$
+
+$D$ is a $J \times J$ diagonal matrix with diagonal $\sigma = (\sigma_1, \ldots, \sigma_J)$ (the visit-specific standard deviation parameters).
+To constrain $\sigma_j \ge 0$, we define a latent parameter vector $\phi = (\phi_1, \ldots, \phi_J)$ such that $\phi_j = \log(\sigma_j)$ for $j = 1, \ldots, J$.
+The model estimates $\phi$ with maximum likelihood.
+
+$\Lambda$ is the $J \times J$ correlation matrix among visits within a patient.
+Define:
+
+$$
+\begin{aligned}
+\Lambda &= L L^T
+\end{aligned}
+$$
+
+$L$ is a lower triangular Cholesky factor of the correlation matrix $\Lambda$, and it is expressed in terms of a vector $\rho = (\rho_1, \ldots, \rho_{J(J - 1) / 2})$ of $\frac{J (J - 1)}{2}$ latent parameters.^[In R, `RTMB::unstructured(J)$corr(rho)` maps latent parameter vector $\rho$ to the $J \times J$ correlation matrix $L L^T$.]
+The model estimates $\rho$ with maximum likelihood.
+
+## Expected value of the control group
+
+Recall that $\mu_{ij}$ is the expected mean outcome of patient $i$ at visit $j$.
+If patient $i$ is part of the control group, then we define: 
+
+$$
+\begin{aligned}
+\mu_{ij} = f(t_{ij} | \xi, \alpha) + W_i \gamma - \langle \overline{W}_i, \gamma \rangle
+\end{aligned}
+$$
+
+Each model expresses the expected outcomes differently, but all models reduce to the above equation for the control arm.
+
+Above, $W_i$ is the $J \times V$ sparse model matrix of constant non-missing covariates from the data, $\overline{W}_i$ is $V$-length vector of the column means of $W_i$, and $\langle \overline{W}_i, \gamma \rangle$ is the inner product of $\overline{W}_i$ with model coefficient parameter vector $\gamma$.^[We express the covariate adjustment terms as $W_i \gamma - \langle \overline{W}_i, \gamma \rangle$ to improve computational efficiency when dealing with sparse matrices.]
+The model estimates $\gamma$ with maximum likelihood.
+
+
+The mean function $f(t_{ij} | \xi, \alpha)$ is the expected clinical outcome at time $t_{ij}$ of the control arm prior to covariate adjustment.
+It is a spline with knots $\xi = (\xi_1, \ldots, \xi_S)$ and vertical anchor points $\alpha = (\alpha_1, \ldots, \alpha_S)$.^[In other words, $f(\xi_s | \xi, \alpha) = \alpha_s$ for $s = 1, \ldots, S$.]
+The knots in $\xi$ are fixed and supplied by the user, and they are usually the scheduled visit times specified in the study protocol.^[However, both the discrete visit designations in the data and the spline knots in the model may need adjustment if many visits occurred off-schedule, as was the case for neurodegeneration studies during the COVID-19 pandemic.
+(See @donohue2023).]
+The model estimates $\alpha$ with maximum likelihood.
+
+# The decline models
+
+In progressive disease, we usually expect patient health to decline after baseline.
+The models in this section measure how well treatment reduces this decline.
+Therapeutic benefit is expressed as a pointwise reduction on the clinical outcome scale.
+
+## The non-proportional decline model
+
+We express the expected value $\mu_{ij}$ as follows:
+
+$$
+\begin{aligned}
+\mu_{ij} &= (1 - \beta_{b(i)j}) \left ( f(t_{ij} | \xi, \alpha) - f(0 | \xi, \alpha) \right ) + f(0 | \xi, \alpha) + W_i \gamma - \langle \overline{W}_i, \gamma \rangle
+\end{aligned}
+$$
+
+where $b(i)$ is the study arm of patient $i$, and $\beta_{kj}$ is the reduction in decline of study arm $k$ ($k = 1, \ldots, K$) relative to the control arm $k = 1$.
+
+To appropriately constrain the parameter space, we express the $\beta_{kj}$ parameters in terms of latent $\theta_{(k - 1)(j - 1)}$ parameters as follows:
+
+$$
+\begin{aligned}
+\beta_{kj} = \begin{cases}
+0 & k = 1 \text{ or } j = 1 \\
+\theta_{(k-1)(j-1)} & k \in \{2, \ldots, K\} \text{ and } j \in \{2, \ldots, J\}
+\end{cases}
+\end{aligned}
+$$
+
+The model estimates the latent parameters $\theta_{11}, \ldots, \theta_{(K - 1)(J - 1)}$ with maximum likelihood.
+
+## The proportional decline model
+
+The proportional decline model is the same as the non-proportional variant except the treatment effects are now $\beta_1, \ldots, \beta_K$, which no longer depend on the visit.
+In other words, we assume that the reduction in decline due to treatment is proportional to time.
+We express the expectation $\mu_{ij}$ as:
+
+$$
+\begin{aligned}
+\mu_{ij} &= (1 - \beta_{b(i)}) \left ( f(t_{ij} | \xi, \alpha) - f(0 | \xi, \alpha) \right ) + f(0 | \xi, \alpha) + W_i \gamma - \langle \overline{W}_i, \gamma \rangle
+\end{aligned}
+$$
+
+To appropriately constrain the parameter space, we introduce latent parameters $\theta_1, \ldots, \theta_{k - 1}$ as follows:
+
+$$
+\begin{aligned}
+\beta_k = \begin{cases}
+0 & k = 1 \\
+\theta_{k - 1} & k = 2, \ldots, K
+\end{cases}
+\end{aligned}
+$$
+
+The latent parameters $\theta_1, \dots, \theta_{K - 1}$ are estimated with maximum likelihood.
+
+# The slowing models
+
+In these models, we assume that treatment slows the passage of time along the disease progression trajectory.
+All study arms share a common disease trajectory, and treated patients may progress more slowly on that same path than control patients.
+The treatment effect is on the time scale, not the clinical outcome scale.
+
+## The non-proportional slowing model
+
+The expected value is:
+
+$$
+\begin{aligned}
+\mu_{ij} &= f \left ( u_{ij} | \xi, \alpha \right) + W_{i}\gamma - \langle \overline{W}_i, \gamma \rangle
+\end{aligned}
+$$
+
+where $u_{ij}$ is shifted time along the disease progression trajectory:
+
+$$
+\begin{aligned}
+u_{ij} = (1 - \beta_{b(i)j}) t_{ij}
+\end{aligned}
+$$
+
+and $\beta_{kj}$ is the relative time shift due treatment $k$ at visit $j$.
+
+To appropriately constrain the parameter space, we express the $\beta_{kj}$ parameters in terms of latent $\theta_{(k - 1)(j - 1)}$ parameters as follows:
+
+$$
+\begin{aligned}
+\beta_{kj} = \begin{cases}
+0 & k = 1 \text{ or } j = 1 \\
+\theta_{(k-1)(j-1)} & k \in \{2, \ldots, K\} \text{ and } j \in \{2, \ldots, J\}
+\end{cases}
+\end{aligned}
+$$
+
+The model estimates the latent parameters $\theta_{11}, \ldots, \theta_{(K - 1)(J - 1)}$ with maximum likelihood.
+
+## The proportional slowing model
+
+The proportional slowing model is the same as the non-proportional variant except the time shifts are now $\beta_1, \ldots, \beta_K$, which no longer depend on the visit.
+In other words, we assume that the slowing of disease progression due to to treatment is proportional to time.
+We express the expectation $\mu_{ij}$ the same as before:
+
+$$
+\begin{aligned}
+\mu_{ij} &= f \left ( u_{ij} | \xi, \alpha \right) + W_{i}\gamma - \langle \overline{W}_i, \gamma \rangle
+\end{aligned}
+$$
+
+but the time shift uses $\beta_{b(i)}$:
+
+$$
+\begin{aligned}
+u_{ij} = (1 - \beta_{b(i)}) t_{ij}
+\end{aligned}
+$$
+
+To appropriately constrain the parameter space, we introduce latent parameters $\theta_1, \ldots, \theta_{k - 1}$ as follows:
+
+$$
+\begin{aligned}
+\beta_k = \begin{cases}
+0 & k = 1 \\
+\theta_{k - 1} & k = 2, \ldots, K
+\end{cases}
+\end{aligned}
+$$
+
+The latent parameters $\theta_1, \dots, \theta_{K - 1}$ are estimated with maximum likelihood.
+
+# References
