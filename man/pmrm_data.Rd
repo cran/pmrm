@@ -4,7 +4,16 @@
 \alias{pmrm_data}
 \title{Internal function to prepare data}
 \usage{
-pmrm_data(data, outcome, time, patient, visit, arm, covariates = ~0)
+pmrm_data(
+  data,
+  outcome,
+  time,
+  patient,
+  visit,
+  arm,
+  covariates = ~0,
+  subset = FALSE
+)
 }
 \arguments{
 \item{data}{A \code{tibble} or data frame with one row per patient visit.
@@ -45,14 +54,21 @@ The minimum level is assumed to be the control arm.}
 \item{covariates}{Partial right-sided formula
 of concomitant terms in the model
 for covariate adjustment (e.g. by age, gender, biomarker status, etc.).
-Should not include main variables such as the values of
+Usually does not include main variables such as the values of
 \code{outcome}, \code{time}, \code{patient}, \code{visit}, or \code{arm}.
+(If you do include any of these variables, be sure
+to check the fitted model for identifiability problems.)
+
 The columns in the data referenced in the formula must not have
 any missing values.
 
 Set \code{covariates} to \code{~ 0} (default) to opt out of covariate adjustment.
 The intercept term is removed from the model matrix \code{W}
 whether or not the formula begins with `~ 0.}
+
+\item{subset}{\code{TRUE} if \code{data} is a subset of data without
+all levels of \code{visit} or \code{arm}, \code{FALSE} to expect a full dataset
+when validating.}
 }
 \value{
 A \code{tibble} of class \code{"pmrm_data"}

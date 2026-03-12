@@ -70,19 +70,12 @@ predict.pmrm_fit <- function(
     . <= 1,
     message = "confidence must have length 1 and be between 0 and 1."
   )
-  labels <- pmrm_data_labels(object$data)
-  data_new <- pmrm_data_new(data = data, labels = labels)
-  pmrm_predictors_validate(data_new)
-  data_new[[labels$outcome]] <- NA_real_
+  data$.pmrm_original_row_order <- seq_len(nrow(data))
+  data_new <- pmrm_predict_data_new(object, data)
+  original_order <- data_new$.pmrm_original_row_order
+  data_new$.pmrm_original_row_order <- NULL
   data_old <- object$data
-  patient <- labels$patient
-  data_new[[patient]] <- paste0("new_", data_new[[patient]])
-  data_old[[patient]] <- paste0("old_", data_old[[patient]])
-  data_combined <- dplyr::bind_rows(data_old, data_new)
-  data_combined[[patient]] <- factor(
-    data_combined[[patient]],
-    levels = unique(data_combined[[patient]])
-  )
+  data_combined <- pmrm_predict_data_combined(object, data_new, data_old)
   constants <- pmrm_constants(
     data = data_combined,
     visit_times = object$constants$visit_times,
@@ -95,6 +88,7 @@ predict.pmrm_fit <- function(
     predict = TRUE,
     adjust = adjust
   )
+  constants$W_column_means <- object$constants$W_column_means
   parameters <- object$optimization$par
   model <- RTMB::MakeADFun(
     func = function(parameters) object$objective(constants, parameters),
@@ -114,15 +108,64 @@ predict.pmrm_fit <- function(
   summary <- tibble::as_tibble(summary[rownames(summary) == name, ])
   summary <- summary[-seq_len(nrow(data_old)), , drop = FALSE] # nolint
   z <- stats::qnorm(p = (1 - confidence) / 2, lower.tail = FALSE)
-  tibble::tibble(
-    arm = data[[labels$arm]],
-    visit = data[[labels$visit]],
-    time = data[[labels$time]],
+  labels <- pmrm_data_labels(object$data)
+  out <- tibble::tibble(
+    patient = data_new[[labels$patient]],
+    arm = data_new[[labels$arm]],
+    visit = data_new[[labels$visit]],
+    time = data_new[[labels$time]],
     estimate = summary[["Estimate"]],
     standard_error = summary[["Std. Error"]],
     lower = estimate - z * standard_error,
     upper = estimate + z * standard_error
   )
+  out[order(original_order), , drop = FALSE]
+}
+
+pmrm_predict_data_combined <- function(object, data_new, data_old) {
+  labels <- pmrm_data_labels(object$data)
+  patient <- labels$patient
+  data_new[[patient]] <- paste0("new_", data_new[[patient]])
+  data_old[[patient]] <- paste0("old_", data_old[[patient]])
+  data_combined <- dplyr::bind_rows(data_old, data_new)
+  data_combined[[patient]] <- factor(
+    data_combined[[patient]],
+    levels = unique(data_combined[[patient]])
+  )
+  data_combined
+}
+
+pmrm_predict_data_new <- function(object, data) {
+  labels <- pmrm_data_labels(object$data)
+  data[[labels$outcome]] <- 0
+  data <- pmrm_data(
+    data = data,
+    outcome = labels$outcome,
+    time = labels$time,
+    patient = labels$patient,
+    visit = labels$visit,
+    arm = labels$arm,
+    covariates = labels$covariates,
+    subset = TRUE
+  )
+  data[[labels$outcome]] <- NA_real_
+  assert(
+    all(levels(data[[labels$visit]]) %in% levels(object$data[[labels$visit]])),
+    message = paste(
+      "visit levels in new data must be a subset",
+      "of visit levels in original data."
+    )
+  )
+  assert(
+    all(levels(data[[labels$arm]]) %in% levels(object$data[[labels$arm]])),
+    message = paste(
+      "arm levels in new data must be a subset",
+      "of arm levels in original data."
+    )
+  )
+  levels(data[[labels$visit]]) <- levels(object$data[[labels$visit]])
+  levels(data[[labels$arm]]) <- levels(object$data[[labels$arm]])
+  data
 }
 
 #' @export
