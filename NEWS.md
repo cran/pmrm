@@ -1,3 +1,9 @@
+# pmrm 0.0.4
+
+* CRITICAL: estimate the proper marginal means for `pmrm_marginals()`. `pmrm_objective()` previously reported the wrong ones for the slowing and non-proportional decline models.
+* Remove unused `data` argument in `fitted()`.
+* Expand `pmrm_estimates()` testing.
+
 # pmrm 0.0.3
 
 * Use all of `pmrm_data()` and rebuild all ordered factors in `predict()` (#5, @lbenz-lilly).

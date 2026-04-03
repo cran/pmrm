@@ -88,7 +88,7 @@
 #' @inheritParams pmrm_simulate
 #' @param data A data frame or `tibble` of clinical data.
 #' @param visit_times Numeric vector, the continuous scheduled time
-#'   of each study visit (since randomization).
+#'   of each study visit (since baseline/randomization).
 #'   If `NULL`, each visit time is automatically set set to the median
 #'   of the observed times at categorical visit in the data.
 #' @param spline_knots Numeric vector of spline knots on the continuous scale,
@@ -280,6 +280,7 @@ pmrm_model <- function(
   if (is.null(initial)) {
     initial <- pmrm_initial(constants, initial_method, proportional)
   }
+  pmrm_initial_validate(initial, constants)
   labels <- pmrm_data_labels(data)
   options <- list(silent = silent, hessian = hessian)
   model <- RTMB::MakeADFun(

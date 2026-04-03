@@ -8,7 +8,7 @@
 #' @importFrom rlang abort inform is_formula warn
 #' @importFrom stats AIC BIC as.formula confint deviance fitted lm logLik
 #'   median nlminb rnorm optimHess predict residuals sd update
-#' @importFrom RTMB dgmrf MakeADFun matrix
+#' @importFrom RTMB MakeADFun matrix
 #' @importFrom tibble as_tibble is_tibble new_tibble
 #' @importFrom tidyselect everything
 #' @importFrom utils capture.output
@@ -32,6 +32,7 @@ utils::globalVariables(
     "kj",
     "K",
     "lower",
+    "marginal_index_beta_fitted",
     "marginal_j",
     "marginal_k",
     "marginal_kj",
